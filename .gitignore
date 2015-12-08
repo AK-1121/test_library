@@ -1,0 +1,7 @@
+*.py[co1]
+*.swp
+*.swo
+__pycache__
+
+## Directory-based project format:
+.idea/

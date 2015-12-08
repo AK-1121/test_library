@@ -1,0 +1,3 @@
+- user class and methods
+- using db and ORM
+- gui with flask
