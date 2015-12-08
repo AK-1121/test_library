@@ -1,3 +1,5 @@
+# For Python 3:
+
 import sys
 from library_lib import Library
 
@@ -20,7 +22,7 @@ class Menu:
     def run(self):
         while True:
             self.display_menu()
-            choice = input('What is your choice? ')
+            choice = str(input('What is your choice? '))
             if choice in self.choice.keys():
                 action = self.choice.get(choice)
                 action()
@@ -43,9 +45,10 @@ class Menu:
     def add_book(self):
         title = input('Title: ')
         author = input('Author: ')
-        rang = input('Rang: ')
+        book_code = input('Book code: ')
+        group_code = input('Group code: ')
         year = input('Year of publishing: ')
-        self.library.add_book(title, author, rang, year)
+        self.library.add_book(title, author, book_code, group_code, year)
         
     def search_by_attribute(self):
         print ('Avalibale attributes to search: ' +

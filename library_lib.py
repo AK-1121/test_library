@@ -1,21 +1,35 @@
 import time
+from sqlalchemy import MetaData, Table, Column, INTEGER, String, create_engine
+from sqlalchemy.orm import mapper, sessionmaker
 
 book_id = 0  # Unique book identifier in the library
 
 class Book:
     '''Describes book-object'''
     
-    def __init__(self, title, author, book_id, 
-                 rang = None, year_of_publishing = None):
+    def __init__(self, book_id, title, author,
+                 book_code = None, group_code = None, year_of_publishing = None):
         '''Initialize a book with title, author`name, rang of book and
         year of publishing.'''
         self.id = book_id
         self.title = title
         self.author = author
-        self.rang = rang
+        self.book_code = book_code  # Book code.
+        self.group_code = group_code  # Group of books code.
         self.year_of_publishing = year_of_publishing
         self.is_checked_out = False  # Checked out status.
         self.date_of_return = None  # Date of return in Linux format.
+
+    def __repr__(self):
+        """ __repr__ should return a printable representation of the object
+        :rtype: str
+        """
+        return ('<Book: "{0}" {1} \n Book ID: {6} Book code: {2} \n'
+                'Book group: {3} Is checked out: {4}. Date of return: {5}>'
+                ).format(self.title, self.author, self.book_code,
+                         self.group_code, self.is_checked_out,
+                         self.date_of_return, self.id)
+
         
     def lend_out_book(self, number_of_days):
         '''Landing the book out. If it is possible (return True).
@@ -43,14 +57,38 @@ class Library:
         self.readers = []  # List of readers.
         self.book_titles = []  # List of book names.
         self.index_of_books = {}  # Dictionary of indexes of books.
+        #  DB section:
+        self.db = create_engine('sqlite:///library.db', echo=True)  # Access the DB Engine
+        #  echo=False – if True, the Engine will log all statements as well as\n"
+        #  a repr() of their parameter lists to the engines logger, which \n"
+        #  defaults to sys.stdout\n"
+        metadata = MetaData()
+        books = Table('books', metadata,
+                      Column('book_id', INTEGER, primary_key=True),
+                      Column('title', String(200), nullable=False),
+                      Column('author', String(200), nullable=False),
+                      Column('book_code', String(20)),
+                      Column('group_code', String(20)),
+                      Column('year_of_publishing', INTEGER),
+                      Column('is_checked_out', INTEGER),  # True if book is checked out.
+                      Column('date_of_return', INTEGER),  # Store as Unix Time
+                      )
+        metadata.create_all(self.db)
+        self.Session = sessionmaker(bind=self.db)
+        self.session = self.Session()
+        mapper(Book, books)
+
         
-    def add_book(self, title, author, rang = None, year_of_publishing = None):
+    def add_book(self, title, author, book_code = None, group_code = None, year_of_publishing = None):
         '''Add new book to a library. Make unique identifier for it.'''
         global book_id
         book_id += 1
-        book = Book(title, author, book_id, rang, year_of_publishing)
+        book = Book(book_id, title, author, book_code, group_code, year_of_publishing)
         self.book_titles.append([book.title, book_id])
         self.index_of_books.update({book_id: book})
+        #self.session.add(book)
+        self.session.add(book)
+        self.session.commit()
         return book_id
 
     def remove_book(self, book_id):
