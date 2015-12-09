@@ -11,14 +11,17 @@ class Book:
                  book_code = None, group_code = None, year_of_publishing = None):
         '''Initialize a book with title, author`name, rang of book and
         year of publishing.'''
-        self.id = book_id
-        self.title = title
-        self.author = author
+        self.id = book_id  # Unique book ID.
+        self.title = title  # Title of the book.
+        self.author = author  # Book author.
         self.book_code = book_code  # Book code.
         self.group_code = group_code  # Group of books code.
         self.year_of_publishing = year_of_publishing
         self.is_checked_out = False  # Checked out status.
         self.date_of_return = None  # Date of return in Linux format.
+        self.user_id = None  # User ID who took the book.
+        self.info1 = ''  # Reserved parameter 1.
+        self.info2 = ''  #Reserved parameter 2.
 
     def __repr__(self):
         """ __repr__ should return a printable representation of the object
@@ -63,29 +66,34 @@ class Library:
         #  a repr() of their parameter lists to the engines logger, which \n"
         #  defaults to sys.stdout\n"
         metadata = MetaData()
-        books = Table('books', metadata,
-                      Column('book_id', INTEGER, primary_key=True),
-                      Column('title', String(200), nullable=False),
-                      Column('author', String(200), nullable=False),
-                      Column('book_code', String(20)),
-                      Column('group_code', String(20)),
-                      Column('year_of_publishing', INTEGER),
-                      Column('is_checked_out', INTEGER),  # True if book is checked out.
-                      Column('date_of_return', INTEGER),  # Store as Unix Time
-                      )
+        self.books = Table('books', metadata,
+                           Column('book_id', INTEGER, primary_key=True),
+                           Column('title', String(200), nullable=False),
+                           Column('author', String(200), nullable=False),
+                           Column('book_code', String(20)),
+                           Column('group_code', String(20)),
+                           Column('year_of_publishing', INTEGER),
+                           Column('is_checked_out', INTEGER),  # True if book is checked out.
+                           Column('date_of_return', INTEGER),  # Store as Unix Time
+                           Column('user_id', INTEGER),  # User ID who took the book
+                           Column('info1', String(200)),  # Reserved field 1.
+                           Column('info2', String(200)),  # Reserved filed 2.
+                           )
         metadata.create_all(self.db)
         self.Session = sessionmaker(bind=self.db)
         self.session = self.Session()
-        mapper(Book, books)
+        mapper(Book, self.books)
 
         
-    def add_book(self, title, author, book_code = None, group_code = None, year_of_publishing = None):
+    def add_book(self, title, author, book_code = None, group_code = None,
+                 year_of_publishing = None):
         '''Add new book to a library. Make unique identifier for it.'''
         global book_id
         book_id += 1
+        user_id, info1, info2 = None, '', ''
         book = Book(book_id, title, author, book_code, group_code, year_of_publishing)
-        self.book_titles.append([book.title, book_id])
-        self.index_of_books.update({book_id: book})
+        self.book_titles.append([book.title, book_id])  # add title to list for searching by titles
+        self.index_of_books.update({book_id: book})  # add book to dict of book objects
         #self.session.add(book)
         self.session.add(book)
         self.session.commit()
@@ -134,18 +142,27 @@ class Library:
         :return:
         '''
         # Check that search parameter exists:
-        try:
-            getattr(Book, search_parameter)
-        except:
-            return False
+        #try:
+        #    getattr(Book, search_parameter)
+        #except:
+        #    return False
         
-        suitable_books = []
-        for book in self.index_of_books.keys():
-            if (str(getattr(book, search_parameter)) == str(search_value) or
-                str(search_value) in str(getattr(book, search_parameter))):
-                suitable_books.append(book)
+        #suitable_books = []
+        #with SessionContext() as session:
+        #query = self.session.query(Book).filter(search_value in Book.title).all()
+        #suitable_books = self.session.query(Book).filter(search_value in Book.title).all()
+        suitable_books = self.session.query(Book).all()
+        print('XXX_Suitable_books: ' + str(type(suitable_books)) + ' -- ' + str(len(suitable_books)))
+        #print('XXX1: ' + str(type(suitable_books[0])) + '\ndir:' + str(dir(suitable_books[0])))
+        #suitable_books = query.all()
+        for book in suitable_books:
+            print('Book title: ' + str(book.title))
+            #print('Book: ' + ' -- '.join([str for row in book]))
+            #if (str(getattr(book, search_parameter)) == str(search_value) or
+            #    str(search_value) in str(getattr(book, search_parameter))):
+            #    suitable_books.append(book)
                 
-        return suitable_books
+        #return suitable_books
             
         
 

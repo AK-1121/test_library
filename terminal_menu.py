@@ -56,7 +56,8 @@ class Menu:
         attribute = input('Attribute name: ')
         attr_value = input('Attribute value: ')
         print('Suitable books:')
-        self.print_list_of_books(self.library.find_books(attribute, attr_value))
+        self.library.find_books(attribute, attr_value)
+        #self.print_list_of_books(self.library.find_books(attribute, attr_value))
         
     def search_by_title(self):
         flag = '-1'
