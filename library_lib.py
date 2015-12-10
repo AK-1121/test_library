@@ -1,12 +1,13 @@
 import time
 from sqlalchemy import MetaData, Table, Column, INTEGER, String, create_engine
 from sqlalchemy.orm import mapper, sessionmaker
+#from sqlalchemy.ext.declarative import declarative_base
 
 book_id = 0  # Unique book identifier in the library
 
 class Book:
     '''Describes book-object'''
-    
+
     def __init__(self, book_id, title, author,
                  book_code = None, group_code = None, year_of_publishing = None):
         '''Initialize a book with title, author`name, rang of book and
@@ -141,27 +142,19 @@ class Library:
         :param search_value: book attribute`s value
         :return:
         '''
-        # Check that search parameter exists:
-        #try:
-        #    getattr(Book, search_parameter)
-        #except:
-        #    return False
-        
-        #suitable_books = []
-        #with SessionContext() as session:
-        #query = self.session.query(Book).filter(search_value in Book.title).all()
-        #suitable_books = self.session.query(Book).filter(search_value in Book.title).all()
-        suitable_books = self.session.query(Book).all()
+        try:
+            suitable_books = self.session.query(Book).filter(getattr(Book, search_parameter) == search_value).all()
+        except:
+            return 'Err'
+
         print('XXX_Suitable_books: ' + str(type(suitable_books)) + ' -- ' + str(len(suitable_books)))
-        #print('XXX1: ' + str(type(suitable_books[0])) + '\ndir:' + str(dir(suitable_books[0])))
-        #suitable_books = query.all()
+        print('Columns: ' + str([c.name for c in self.books.columns]))
+        #print('dir(self.books): ' + str(dir(self.books)))
         for book in suitable_books:
-            print('Book title: ' + str(book.title))
-            #print('Book: ' + ' -- '.join([str for row in book]))
-            #if (str(getattr(book, search_parameter)) == str(search_value) or
-            #    str(search_value) in str(getattr(book, search_parameter))):
-            #    suitable_books.append(book)
-                
+            for col in self.books.columns:
+                print(getattr(book, col.name), end=' - ')
+            print('')
+
         #return suitable_books
             
         
