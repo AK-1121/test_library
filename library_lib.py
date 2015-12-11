@@ -12,7 +12,7 @@ class Book:
                  book_code = None, group_code = None, year_of_publishing = None):
         '''Initialize a book with title, author`name, rang of book and
         year of publishing.'''
-        self.id = book_id  # Unique book ID.
+        self.book_id = book_id  # Unique book ID.
         self.title = title  # Title of the book.
         self.author = author  # Book author.
         self.book_code = book_code  # Book code.
@@ -32,7 +32,7 @@ class Book:
                 'Book group: {3} Is checked out: {4}. Date of return: {5}>'
                 ).format(self.title, self.author, self.book_code,
                          self.group_code, self.is_checked_out,
-                         self.date_of_return, self.id)
+                         self.date_of_return, self.book_id)
 
         
     def lend_out_book(self, number_of_days):
@@ -51,7 +51,25 @@ class Book:
             return True
         else: return False
         
-        
+
+user_id = 0  # Unique user identifier in the library.
+
+class User:
+    """
+    Class describes library user (visitor).
+    """
+    def __init__(self, user_id, name, passport_id, address, phone=None):
+        self.user_id = user_id,
+        self.name = name,
+        self.passport_id = passport_id,
+        self.address = address,
+        self.phone = phone,
+        self.list_of_books_id = '-',
+
+    def change_user_data(self, parameter, parameter_value):
+        pass
+
+
 class Library:
     '''Describes library object.'''
     
@@ -63,6 +81,7 @@ class Library:
         self.index_of_books = {}  # Dictionary of indexes of books.
         #  DB section:
         self.db = create_engine('sqlite:///library.db', echo=True)  # Access the DB Engine
+        #self.db = create_engine('sqlite:///library.db', echo=False)  # Access the DB Engine
         #  echo=False – if True, the Engine will log all statements as well as\n"
         #  a repr() of their parameter lists to the engines logger, which \n"
         #  defaults to sys.stdout\n"
@@ -80,10 +99,21 @@ class Library:
                            Column('info1', String(200)),  # Reserved field 1.
                            Column('info2', String(200)),  # Reserved filed 2.
                            )
+        self.users = Table('users', metadata,
+                           Column('user_id', INTEGER, primary_key=True),
+                           Column('name', String(100), nullable=False),
+                           Column('passport_id', String(50), nullable=False),
+                           Column('address', String(250), nullable=False),
+                           Column('phone', String(25)),
+                           Column('list_of_books_id', String(250)),
+                           Column('info11', String(200)),  # Reserved field 1.
+                           Column('info12', String(200)),  # Reserved filed 2.
+                           )
         metadata.create_all(self.db)
         self.Session = sessionmaker(bind=self.db)
         self.session = self.Session()
         mapper(Book, self.books)
+        mapper(User, self.users)
 
         
     def add_book(self, title, author, book_code = None, group_code = None,
@@ -93,12 +123,21 @@ class Library:
         book_id += 1
         user_id, info1, info2 = None, '', ''
         book = Book(book_id, title, author, book_code, group_code, year_of_publishing)
-        self.book_titles.append([book.title, book_id])  # add title to list for searching by titles
-        self.index_of_books.update({book_id: book})  # add book to dict of book objects
-        #self.session.add(book)
+        #self.book_titles.append([book.title, book_id])  # add title to list for searching by titles
+        #self.index_of_books.update({book_id: book})  # add book to dict of book objects
         self.session.add(book)
         self.session.commit()
         return book_id
+
+    def add_user(self, name, passport_id, address, phone=None):
+        """ Add new user to a library """
+        global user_id
+        user_id += 1
+        info11, info12 = '', ''
+        user = User(user_id, name, passport_id, address, phone)
+        self.session.add(user)
+        self.session.commit()
+        return user_id
 
     def remove_book(self, book_id):
         pass
@@ -134,29 +173,32 @@ class Library:
                     suitable_id_list.append(title[1])
             return suitable_id_list
 
-
+    def list_all_books(self):
+        """
+        :return: list of all books in the library
+        :rtype: list
+        """
+        return self.session.query(Book).all()
             
     def find_books(self, search_parameter, search_value):
         ''' Find books with determined attribute and its value.
         :param search_parameter: book attribute for searching
         :param search_value: book attribute`s value
-        :return:
+        :return: 1) in case of correct search parameters return tuple:
+            (a, b) where a - list of suitable book objects,
+            b - list of book attributes
+            2) in case of incorrect search parameters return tuple: ('Err', 'Err')
         '''
         try:
             suitable_books = self.session.query(Book).filter(getattr(Book, search_parameter) == search_value).all()
+            return (suitable_books, [col.name for col in self.books.columns])
         except:
-            return 'Err'
+            return ('Err', 'Err')
 
-        print('XXX_Suitable_books: ' + str(type(suitable_books)) + ' -- ' + str(len(suitable_books)))
-        print('Columns: ' + str([c.name for c in self.books.columns]))
+        #print('XXX_Suitable_books: ' + str(type(suitable_books)) + ' -- ' + str(len(suitable_books)))
+        #print('Columns: ' + str([c.name for c in self.books.columns]))
         #print('dir(self.books): ' + str(dir(self.books)))
-        for book in suitable_books:
-            for col in self.books.columns:
-                print(getattr(book, col.name), end=' - ')
-            print('')
 
-        #return suitable_books
-            
         
 
     
