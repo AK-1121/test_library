@@ -59,12 +59,12 @@ class User:
     Class describes library user (visitor).
     """
     def __init__(self, user_id, name, passport_id, address, phone=None):
-        self.user_id = user_id,
-        self.name = name,
-        self.passport_id = passport_id,
-        self.address = address,
-        self.phone = phone,
-        self.list_of_books_id = '-',
+        self.user_id = user_id
+        self.name = name
+        self.passport_id = passport_id
+        self.address = address
+        self.phone = phone
+        self.list_of_books_id = '-'
 
     def change_user_data(self, parameter, parameter_value):
         pass
@@ -119,25 +119,42 @@ class Library:
     def add_book(self, title, author, book_code = None, group_code = None,
                  year_of_publishing = None):
         '''Add new book to a library. Make unique identifier for it.'''
-        global book_id
-        book_id += 1
-        user_id, info1, info2 = None, '', ''
-        book = Book(book_id, title, author, book_code, group_code, year_of_publishing)
-        #self.book_titles.append([book.title, book_id])  # add title to list for searching by titles
-        #self.index_of_books.update({book_id: book})  # add book to dict of book objects
+        # Find index (book_id) of last book in books table:
+        try:
+            book_id = self.session.query(Book).order_by(Book.book_id.desc()).first().book_id
+        except:  # in case of there are no books in DB:
+            book_id = 0
+        book = Book(book_id + 1, title, author, book_code, group_code, year_of_publishing)
         self.session.add(book)
         self.session.commit()
         return book_id
 
     def add_user(self, name, passport_id, address, phone=None):
         """ Add new user to a library """
-        global user_id
-        user_id += 1
-        info11, info12 = '', ''
-        user = User(user_id, name, passport_id, address, phone)
+        # Find index user_id of last user in table users:
+        try:
+            user_id = self.session.query(User).order_by(User.user_id.desc()).first().user_id
+        except:  # in case of no users in db:
+            user_id = 0
+        user = User(user_id + 1, name, passport_id, address, phone)
         self.session.add(user)
         self.session.commit()
         return user_id
+
+    def remove_user(self, user_id):
+        """
+        :param user_id: Remove user from db by user_id
+        :type user_id: int or str
+        :return: True or False
+        :rtype: bool
+        """
+        result_of_removing = self.session.query(User).filter_by(user_id = int(user_id)).delete()
+        self.session.commit()
+        if result_of_removing:
+            return True
+        else:
+            return False
+
 
     def remove_book(self, book_id):
         pass
@@ -195,9 +212,18 @@ class Library:
         except:
             return ('Err', 'Err')
 
-        #print('XXX_Suitable_books: ' + str(type(suitable_books)) + ' -- ' + str(len(suitable_books)))
-        #print('Columns: ' + str([c.name for c in self.books.columns]))
-        #print('dir(self.books): ' + str(dir(self.books)))
+    def hand_out_book(self, book_id, user_id):
+        """ Give a book to a user
+        :param book_id:
+        :return:
+        """
+        try:
+            #flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(is_checked_out=1)
+            flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(
+                {"is_checked_out":1, "user_id": user_id})
+            print("result AFS: " + str(flag_result))
+        except Exception as e:
+            print("Exception SDF: " + str(Exception) + ' -- ' + str(e))
 
         
 
