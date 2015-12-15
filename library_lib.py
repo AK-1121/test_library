@@ -1,5 +1,5 @@
 import time
-from sqlalchemy import MetaData, Table, Column, INTEGER, String, create_engine
+from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_
 from sqlalchemy.orm import mapper, sessionmaker
 #from sqlalchemy.ext.declarative import declarative_base
 
@@ -22,7 +22,7 @@ class Book:
         self.date_of_return = None  # Date of return in Linux format.
         self.user_id = None  # User ID who took the book.
         self.info1 = ''  # Reserved parameter 1.
-        self.info2 = ''  #Reserved parameter 2.
+        self.info2 = ''  # Reserved parameter 2.
 
     def __repr__(self):
         """ __repr__ should return a printable representation of the object
@@ -86,19 +86,6 @@ class Library:
         #  a repr() of their parameter lists to the engines logger, which \n"
         #  defaults to sys.stdout\n"
         metadata = MetaData()
-        self.books = Table('books', metadata,
-                           Column('book_id', INTEGER, primary_key=True),
-                           Column('title', String(200), nullable=False),
-                           Column('author', String(200), nullable=False),
-                           Column('book_code', String(20)),
-                           Column('group_code', String(20)),
-                           Column('year_of_publishing', INTEGER),
-                           Column('is_checked_out', INTEGER),  # True if book is checked out.
-                           Column('date_of_return', INTEGER),  # Store as Unix Time
-                           Column('user_id', INTEGER),  # User ID who took the book
-                           Column('info1', String(200)),  # Reserved field 1.
-                           Column('info2', String(200)),  # Reserved filed 2.
-                           )
         self.users = Table('users', metadata,
                            Column('user_id', INTEGER, primary_key=True),
                            Column('name', String(100), nullable=False),
@@ -108,6 +95,20 @@ class Library:
                            Column('list_of_books_id', String(250)),
                            Column('info11', String(200)),  # Reserved field 1.
                            Column('info12', String(200)),  # Reserved filed 2.
+                           )
+
+        self.books = Table('books', metadata,
+                           Column('book_id', INTEGER, primary_key=True),
+                           Column('title', String(200), nullable=False),
+                           Column('author', String(200), nullable=False),
+                           Column('book_code', String(20)),
+                           Column('group_code', String(20)),
+                           Column('year_of_publishing', INTEGER),
+                           Column('is_checked_out', INTEGER),  # True if book is checked out.
+                           Column('date_of_return', INTEGER),  # Store as Unix Time
+                           Column('user_id', INTEGER, ForeignKey('users.user_id')),  # User ID who took the book
+                           Column('info1', String(200)),  # Reserved field 1.
+                           Column('info2', String(200)),  # Reserved filed 2.
                            )
         metadata.create_all(self.db)
         self.Session = sessionmaker(bind=self.db)
@@ -218,16 +219,26 @@ class Library:
         :return:
         """
         try:
-            #flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(is_checked_out=1)
-            #flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(
-            #    {"is_checked_out":1, "user_id": user_id})
-            result = self.session.query(Book).filter_by(book_id = book_id).update({'is_checked_out':1,
-                                                                                   'user_id': user_id,
-                                                                                   'date_of_return': int(time.time())})
-            self.session.commit()
-            print("result AFS: " + str(result))
+            # Check that user with given ID exists (check_user = 1 if user exists):
+            check_user = self.session.query(exists().where(User.user_id == int(user_id))).scalar()
+            # Check that book with such ID is free (check_book = 1 if book exists and free):
+            check_book = self.session.query(Book).filter(and_(Book.book_id == int(book_id),
+                                                            Book.is_checked_out == 0)).count()
+            if check_book and check_user:
+                now_time = int(time.time())
+                return_date = (now_time // 86400) * 86400 + 1209600  # Get date of return in Linux format.
+                result = self.session.query(Book).filter_by(book_id = book_id).update({'is_checked_out':1,
+                                                                                       'user_id': user_id,
+                                                                                       'date_of_return': return_date})
+                self.session.query(Book).filter_by(user_id == int(user_id)).update({'list_of_books_id': list_of_books_id + })
+                self.session.commit()
+                print('Book was successfully lent out.')
+            elif not check_book:
+                print('Can`t find such free book.')
+            else:
+                print('Can`t find such active user.')
         except Exception as e:
-            print("Exception SDF: " + str(Exception) + ' -- ' + str(e))
+            print('Error during renting a book: ' + str(Exception) + ' - ' + str(e))
 
         
 

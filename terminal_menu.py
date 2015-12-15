@@ -87,7 +87,7 @@ class Menu:
 
     def hand_out_book(self):
         book_id = input('Book ID (for rent a book): ')
-        user_id = input('User ID (rentin a book):   ')
+        user_id = input('User ID (renting a book):   ')
         try:
             self.library.hand_out_book(book_id, user_id)
         except Exception as e:
