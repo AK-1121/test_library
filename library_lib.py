@@ -219,9 +219,13 @@ class Library:
         """
         try:
             #flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(is_checked_out=1)
-            flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(
-                {"is_checked_out":1, "user_id": user_id})
-            print("result AFS: " + str(flag_result))
+            #flag_result = self.session.update(self.books).where(self.books.book_id==book_id).values(
+            #    {"is_checked_out":1, "user_id": user_id})
+            result = self.session.query(Book).filter_by(book_id = book_id).update({'is_checked_out':1,
+                                                                                   'user_id': user_id,
+                                                                                   'date_of_return': int(time.time())})
+            self.session.commit()
+            print("result AFS: " + str(result))
         except Exception as e:
             print("Exception SDF: " + str(Exception) + ' -- ' + str(e))
 

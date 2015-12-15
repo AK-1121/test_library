@@ -86,8 +86,8 @@ class Menu:
             print('Error was detected: ' + str(Exception) + ' info: ' + str(e))
 
     def hand_out_book(self):
-        book_id = input('Book ID: ')
-        user_id = input('User ID: ')
+        book_id = input('Book ID (for rent a book): ')
+        user_id = input('User ID (rentin a book):   ')
         try:
             self.library.hand_out_book(book_id, user_id)
         except Exception as e:
