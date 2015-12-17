@@ -80,8 +80,8 @@ class Library:
         self.book_titles = []  # List of book names.
         self.index_of_books = {}  # Dictionary of indexes of books.
         #  DB section:
-        self.db = create_engine('sqlite:///library.db', echo=True)  # Access the DB Engine
-        #self.db = create_engine('sqlite:///library.db', echo=False)  # Access the DB Engine
+        #self.db = create_engine('sqlite:///library.db', echo=True)  # Access the DB Engine
+        self.db = create_engine('sqlite:///library.db', echo=False)  # Access the DB Engine
         #  echo=False – if True, the Engine will log all statements as well as\n"
         #  a repr() of their parameter lists to the engines logger, which \n"
         #  defaults to sys.stdout\n"
@@ -218,27 +218,34 @@ class Library:
         :param book_id:
         :return:
         """
-        try:
-            # Check that user with given ID exists (check_user = 1 if user exists):
-            check_user = self.session.query(exists().where(User.user_id == int(user_id))).scalar()
-            # Check that book with such ID is free (check_book = 1 if book exists and free):
-            check_book = self.session.query(Book).filter(and_(Book.book_id == int(book_id),
-                                                            Book.is_checked_out == 0)).count()
-            if check_book and check_user:
-                now_time = int(time.time())
-                return_date = (now_time // 86400) * 86400 + 1209600  # Get date of return in Linux format.
-                result = self.session.query(Book).filter_by(book_id = book_id).update({'is_checked_out':1,
-                                                                                       'user_id': user_id,
-                                                                                       'date_of_return': return_date})
-                self.session.query(Book).filter_by(user_id == int(user_id)).update({'list_of_books_id': list_of_books_id + })
-                self.session.commit()
-                print('Book was successfully lent out.')
-            elif not check_book:
-                print('Can`t find such free book.')
-            else:
-                print('Can`t find such active user.')
-        except Exception as e:
-            print('Error during renting a book: ' + str(Exception) + ' - ' + str(e))
+        #try:
+        # Check that user with given ID exists (check_user = 1 if user exists):
+        #check_user = self.session.query(exists().where(User.user_id == int(user_id))).scalar()
+        #current_user = self.session.query(exists().where(User.user_id == int(user_id))).first()
+        current_user = self.session.query(User).filter(User.user_id == int(user_id)).first()
+        #print('CU: ' + str(type(current_user)) + ' - ' + str(current_user) + ' -- ' + str(current_user.passport_id))
+        # Check that book with such ID is free (check_book = 1 if book exists and free):
+        #check_book = self.session.query(Book).filter(and_(Book.book_id == int(book_id),
+        #                                                Book.is_checked_out == 0)).count()
+        current_book = self.session.query(Book).filter(and_(Book.book_id == int(book_id),
+                                                        Book.is_checked_out == 0)).first()
+        #print('CB: ' + str(type(current_book)) + str(current_book))
+        if current_user and current_book:
+            now_time = int(time.time())
+            return_date = (now_time // 86400) * 86400 + 1209600  # Get date of return in Linux format.
+            result = self.session.query(Book).filter_by(book_id = int(book_id)).update({'is_checked_out':1,
+                                                                                        'user_id': user_id,
+                                                                                        'date_of_return': return_date})
+            self.session.query(User).filter_by(user_id = int(user_id)).update({
+                'list_of_books_id': current_user.list_of_books_id + book_id + '-'})
+            self.session.commit()
+            print('Book was successfully lent out.')
+        elif not current_book:
+            print('Can`t find such free book.')
+        else:
+            print('Can`t find such active user.')
+        #except Exception as e:
+        #    print('Error during renting a book: ' + str(Exception) + ' - ' + str(e))
 
         
 
