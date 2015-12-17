@@ -247,6 +247,24 @@ class Library:
         #except Exception as e:
         #    print('Error during renting a book: ' + str(Exception) + ' - ' + str(e))
 
+    def return_book(self, book_id, user_id):
+        current_user = self.session.query(User).filter(User.user_id == int(user_id)).first()
+        if not current_user:
+            print('Can`t find user with ID {0}'.format(user_id))
+            return 1
+        elif book_id not in current_user.list_of_books_id:
+            print('User with ID {0} did not lend out the book with ID {1}'.format(user_id, book_id))
+            return 2
+        else:
+            self.session.query(Book).filter_by(book_id = int(book_id)).update({
+                'is_checked_out':0, 'user_id':None, 'date_of_return': None})
+            self.session.query(User).filter_by(user_id = int(user_id)).update({
+                'list_of_books_id': current_user.list_of_books_id.replace(book_id, '').replace('--', '-')})
+            self.session.commit()
+            print('Book with ID: {0} was successfully returned by user {1} (ID: {2}) . '.format(book_id,
+                                                                                                current_user.name,
+                                                                                                user_id))
+            return 0
         
 
     

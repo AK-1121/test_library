@@ -11,6 +11,7 @@ class Menu:
                         '2': self.add_book,
                         '3': self.search_by_attribute,
                         '4': self.hand_out_book,
+                        '5': self.return_book,
                         '6': self.add_user,
                         '7': self.remove_user,
                         'q': self.quit,
@@ -19,7 +20,7 @@ class Menu:
     def display_menu(self):
         print('\n1 - Show books.\n2 - Add book.\n' +
               '3 - Search book by attribute \n4 - Hand out a book\n'
-              '6 - Add user\n' +
+              '5 - Return a book \n6 - Add user\n'
               '7 - Delete user \nq - Quit')
                       
     def run(self):
@@ -88,10 +89,13 @@ class Menu:
     def hand_out_book(self):
         book_id = input('Book ID (for rent a book): ')
         user_id = input('User ID (renting a book):   ')
-        #try:
         self.library.hand_out_book(book_id, user_id)
-        #except Exception as e:
-        #    print("Exception AWQ: " + str(Exception) + ' -- ' + str(e))
+
+    def return_book(self):
+        book_id = input('Book ID (returned book): ')
+        user_id = input('User ID (user who returns book): ')
+        self.library.return_book(book_id, user_id)
+
 
 
     def quit(self):
