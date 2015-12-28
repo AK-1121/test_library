@@ -89,12 +89,20 @@ class Menu:
     def hand_out_book(self):
         book_id = input('Book ID (for rent a book): ')
         user_id = input('User ID (renting a book):   ')
-        self.library.hand_out_book(book_id, user_id)
+        print(self.library.hand_out_book(book_id, user_id))
 
     def return_book(self):
         book_id = input('Book ID (returned book): ')
         user_id = input('User ID (user who returns book): ')
-        self.library.return_book(book_id, user_id)
+        result = self.library.return_book(book_id, user_id)
+        if result == 0:
+             print('Book with ID: {0} was successfully returned by user with ID: {1}) . '.format(book_id, user_id))
+        elif result == 1:
+            print('Can`t find user with ID {0}'.format(user_id))
+        elif result == 2:
+            print('User with ID {0} did not lend out the book with ID {1}'.format(user_id, book_id))
+        else:
+            print ('Error: unknown return of function')
 
 
 

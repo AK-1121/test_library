@@ -73,7 +73,7 @@ class User:
 class Library:
     '''Describes library object.'''
     
-    def __init__(self, name_of_lib = ''):
+    def __init__(self, name_of_lib = '', lib_path = 'library.db'):
         #global book_id
         self.name_of_lib = name_of_lib
         self.readers = []  # List of readers.
@@ -81,7 +81,8 @@ class Library:
         self.index_of_books = {}  # Dictionary of indexes of books.
         #  DB section:
         #self.db = create_engine('sqlite:///library.db', echo=True)  # Access the DB Engine
-        self.db = create_engine('sqlite:///library.db', echo=False)  # Access the DB Engine
+        #self.db = create_engine('sqlite:///library.db', echo=False)  # Access the DB Engine
+        self.db = create_engine('sqlite:///{0}'.format(lib_path), echo=False)  # Access the DB Engine
         #  echo=False – if True, the Engine will log all statements as well as\n"
         #  a repr() of their parameter lists to the engines logger, which \n"
         #  defaults to sys.stdout\n"
@@ -141,6 +142,9 @@ class Library:
         self.session.add(user)
         self.session.commit()
         return user_id
+
+    def list_all_users(self):
+        return self.session.query(User).all()
 
     def remove_user(self, user_id):
         """
@@ -239,21 +243,27 @@ class Library:
             self.session.query(User).filter_by(user_id = int(user_id)).update({
                 'list_of_books_id': current_user.list_of_books_id + book_id + '-'})
             self.session.commit()
-            print('Book was successfully lent out.')
+            return 'Book was successfully lent out.'
         elif not current_book:
-            print('Can`t find such free book.')
+            return 'Can`t find such free book.'
         else:
-            print('Can`t find such active user.')
+            return 'Can`t find such active user.'
         #except Exception as e:
         #    print('Error during renting a book: ' + str(Exception) + ' - ' + str(e))
 
     def return_book(self, book_id, user_id):
+        """
+        Run this function when library visitor return a book
+        :param book_id: Book ID
+        :param user_id: User ID
+        :return: 0 - Book was successfully returned.
+                 1 - Can`t find user with such ID.
+                 2 - User with such ID didn't lend a book with given ID.
+        """
         current_user = self.session.query(User).filter(User.user_id == int(user_id)).first()
         if not current_user:
-            print('Can`t find user with ID {0}'.format(user_id))
             return 1
         elif book_id not in current_user.list_of_books_id:
-            print('User with ID {0} did not lend out the book with ID {1}'.format(user_id, book_id))
             return 2
         else:
             self.session.query(Book).filter_by(book_id = int(book_id)).update({
@@ -261,9 +271,6 @@ class Library:
             self.session.query(User).filter_by(user_id = int(user_id)).update({
                 'list_of_books_id': current_user.list_of_books_id.replace(book_id, '').replace('--', '-')})
             self.session.commit()
-            print('Book with ID: {0} was successfully returned by user {1} (ID: {2}) . '.format(book_id,
-                                                                                                current_user.name,
-                                                                                                user_id))
             return 0
         
 
