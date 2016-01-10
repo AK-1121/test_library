@@ -1,12 +1,28 @@
 import time
 from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_
 from sqlalchemy.orm import mapper, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.ext.declarative import declarative_base
 
 book_id = 0  # Unique book identifier in the library
+Base = declarative_base()  # Parent class for Book and User
 
-class Book:
+class Book(Base):
     '''Describes book-object'''
+    __table__ = Table('books', Base.metadata,
+                           Column('book_id', INTEGER, primary_key=True),
+                           Column('title', String(200), nullable=False),
+                           Column('author', String(200), nullable=False),
+                           Column('book_code', String(20)),
+                           Column('group_code', String(20)),
+                           Column('year_of_publishing', INTEGER),
+                           Column('is_checked_out', INTEGER),  # True if book is checked out.
+                           Column('date_of_return', INTEGER),  # Store as Unix Time
+                           #Column('user_id', INTEGER, ForeignKey('users.user_id')),  # User ID who took the book
+                           Column('user_id', INTEGER),  # User ID who took the book
+                           Column('info1', String(200)),  # Reserved field 1.
+                           Column('info2', String(200)),  # Reserved filed 2.
+                           )
 
     def __init__(self, book_id, title, author,
                  book_code = None, group_code = None, year_of_publishing = None):
@@ -54,7 +70,17 @@ class Book:
 
 user_id = 0  # Unique user identifier in the library.
 
-class User:
+class User(Base):
+    __table__ = Table('users', Base.metadata,
+                           Column('user_id', INTEGER, primary_key=True),
+                           Column('name', String(100), nullable=False),
+                           Column('passport_id', String(50), nullable=False),
+                           Column('address', String(250), nullable=False),
+                           Column('phone', String(25)),
+                           Column('list_of_books_id', String(250)),
+                           Column('info11', String(200)),  # Reserved field 1.
+                           Column('info12', String(200)),  # Reserved filed 2.
+                           )
     """
     Class describes library user (visitor).
     """
@@ -86,8 +112,10 @@ class Library:
         #  echo=False – if True, the Engine will log all statements as well as\n"
         #  a repr() of their parameter lists to the engines logger, which \n"
         #  defaults to sys.stdout\n"
-        metadata = MetaData()
-        self.users = Table('users', metadata,
+        #metadata1 = MetaData()
+        #metadata = MetaData()
+        """
+        self.users = Table('users', metadata1,
                            Column('user_id', INTEGER, primary_key=True),
                            Column('name', String(100), nullable=False),
                            Column('passport_id', String(50), nullable=False),
@@ -98,6 +126,8 @@ class Library:
                            Column('info12', String(200)),  # Reserved filed 2.
                            )
 
+
+
         self.books = Table('books', metadata,
                            Column('book_id', INTEGER, primary_key=True),
                            Column('title', String(200), nullable=False),
@@ -107,15 +137,20 @@ class Library:
                            Column('year_of_publishing', INTEGER),
                            Column('is_checked_out', INTEGER),  # True if book is checked out.
                            Column('date_of_return', INTEGER),  # Store as Unix Time
-                           Column('user_id', INTEGER, ForeignKey('users.user_id')),  # User ID who took the book
+                           #Column('user_id', INTEGER, ForeignKey('users.user_id')),  # User ID who took the book
+                           Column('user_id', INTEGER),  # User ID who took the book
                            Column('info1', String(200)),  # Reserved field 1.
                            Column('info2', String(200)),  # Reserved filed 2.
                            )
-        metadata.create_all(self.db)
+        """
+        #metadata.create_all(self.db)
+        Base.metadata.create_all(self.db)
+        #metadata1.create_all(self.db)
         self.Session = sessionmaker(bind=self.db)
         self.session = self.Session()
-        mapper(Book, self.books)
-        mapper(User, self.users)
+        #mapper(User, self.users)
+        #mapper(Book, self.books, non_primary=True)
+        #mapper(Book, self.books)
 
         
     def add_book(self, title, author, book_code = None, group_code = None,
