@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>Books list</title>
+</head>
+
+<body>
+<h3>Библиотека: {{ lib_name }}</h3>
+<h3>Список имеющихся книг:</h3>
+<table border="2" bordercolor='blue' width="600">
+    <tr>
+        <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
+        <td>Выдана ли</td><td>Кто взял</td><td>Дата возврата</td>
+    </tr>
+    {% for book in books %}
+<tr>
+    <td>{{ book.book_id }}</td>
+    <td>{{ book.title }}</td>
+    <td>{{ book.author }}</td>
+    <td>{{ book.year_of_publishing }}</td>
+    <td>{{ book.status }}</td>
+    <td>{{ book.user_id }} </td>
+    <td bgcolor={{ book.warning_color }}>{{ book.date_of_return }}</td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>
+
+
+

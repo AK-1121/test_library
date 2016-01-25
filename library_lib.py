@@ -148,9 +148,6 @@ class Library:
         #metadata1.create_all(self.db)
         self.Session = sessionmaker(bind=self.db)
         self.session = self.Session()
-        #mapper(User, self.users)
-        #mapper(Book, self.books, non_primary=True)
-        #mapper(Book, self.books)
 
         
     def add_book(self, title, author, book_code = None, group_code = None,

@@ -1,0 +1,31 @@
+<html>
+<head>
+    <title>Карточка: {{ user.name }} (ID: {{ user.user_id }})</title>
+</head>
+
+<body>
+<h3>Имя: {{ user.name }}</h3>
+<table border="1" >
+    <tr><td>Паспорт:</td><td>{{ user.passport_id }}</td></tr>
+    <tr><td>Адрес:</td><td>{{ user.address }}</td></tr>
+    <tr><td>Телефон:</td><td>{{ user.phone }}</td></tr>
+</table>
+Выданные книги:
+<table border="2">
+    <tr>
+        <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
+        <td>Дата возврата</td>
+    </tr>
+{% for book in books %}
+    <tr>
+        <td>{{ book.book_id }}</td>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.year_of_publishing }}</td>
+        <td bgcolor={{ book.warning_color }}>{{ book.date_of_return }}</td>
+    </tr>
+{% endfor %}
+</table>
+
+</body>
+</html>
