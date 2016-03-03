@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from library_lib import Library, Book, User
 
 
@@ -57,7 +57,7 @@ def show_users():
 def add_user():
     pass
 
-@app.route('/user/<int:user_id>')
+@app.route('/user/<int:user_id>', methods=['GET', 'POST'])
 def show_user(user_id):
     user = library.session.query(User).filter(User.user_id == user_id).first()
     print('UU: ' + str((user)))
@@ -67,9 +67,15 @@ def show_user(user_id):
         # Если у пользователя на руках есть книги (список list_of_book_id - не пуст) - запрашиваем их данные:
         borrowed_books = []
         if user.list_of_books_id:
-            #print('UU2_0: ' + str(dir(Book.book_id)))
             borrowed_books = library.session.query(Book).filter(Book.book_id.in_(user.list_of_books_id)).all()
-        #print('UU2: ' + str((borrowed_books)))
+
+        # Если пришли данные из формы страницы, то обрабатываем их:
+        if request.form:
+            print('Data from POST was gotten.')
+            print('Return_books: ' + str(request.form))
+        else:
+            print('No data from POST.')
+
         return render_template('user_card.html', user=user, books=borrowed_books)
 
 if __name__ == '__main__':
