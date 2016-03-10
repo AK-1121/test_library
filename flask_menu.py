@@ -1,4 +1,5 @@
 import datetime
+import time
 
 from flask import Flask, render_template, request
 from library_lib import Library, Book, User
@@ -59,6 +60,16 @@ def add_user():
 
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
 def show_user(user_id):
+    # Если пришли данные из формы страницы, то обрабатываем их:
+    if request.form:
+        return_books_id = request.form.getlist("return_book_id")
+        # Возврат книг посетителя:
+        if return_books_id:
+            for book_id in return_books_id:
+                result = library.return_book(book_id, user_id)
+                print("Return result: %s" % result)
+
+
     user = library.session.query(User).filter(User.user_id == user_id).first()
     print('UU: ' + str((user)))
     if not user:  # Проверяем, найден ли пользователь с таким ID
@@ -69,12 +80,11 @@ def show_user(user_id):
         if user.list_of_books_id:
             borrowed_books = library.session.query(Book).filter(Book.book_id.in_(user.list_of_books_id)).all()
 
-        # Если пришли данные из формы страницы, то обрабатываем их:
-        if request.form:
-            print('Data from POST was gotten.')
-            print('Return_books: ' + str(request.form))
-        else:
-            print('No data from POST.')
+        for i in range(len(borrowed_books)):
+            if borrowed_books[i].date_of_return < time.time():
+                borrowed_books[i].warning_color = "#FF0000"
+            borrowed_books[i].date_of_return_human_format = datetime.datetime.fromtimestamp(
+                borrowed_books[i].date_of_return).strftime("%d-%m-%Y")
 
         return render_template('user_card.html', user=user, books=borrowed_books)
 
