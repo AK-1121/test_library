@@ -61,7 +61,7 @@ class Menu:
                'title, author, rang, year')
         attribute = input('Attribute name: ')
         attr_value = input('Attribute value: ')
-        suitable_books, list_of_attributes = self.library.find_books(attribute, attr_value)
+        suitable_books = self.library.find_books(attribute, attr_value)
         if suitable_books == 'Err':
             print('Search parameter is incorrect!')
         else:

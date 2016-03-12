@@ -1,5 +1,5 @@
 import time
-from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_
+from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_, func
 from sqlalchemy.orm import mapper, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.ext.declarative import declarative_base
@@ -243,11 +243,12 @@ class Library:
             b - list of book attributes
             2) in case of incorrect search parameters return tuple: ('Err', 'Err')
         '''
-        try:
-            suitable_books = self.session.query(Book).filter(getattr(Book, search_parameter) == search_value).all()
-            return (suitable_books, [col.name for col in self.books.columns])
-        except:
-            return ('Err', 'Err')
+
+        #suitable_books = self.session.query(Book).filter(getattr(Book, search_parameter) == search_value).all()
+        suitable_books = self.session.query(Book).filter(getattr(Book, search_parameter).contains(search_value)).all()
+
+        return suitable_books
+
 
     def hand_out_book(self, book_id, user_id):
         """ Give a book to a user

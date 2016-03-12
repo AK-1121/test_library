@@ -60,21 +60,31 @@ def add_user():
 
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
 def show_user(user_id):
-    # Если пришли данные из формы страницы, то обрабатываем их:
-    if request.form:
-        return_books_id = request.form.getlist("return_book_id")
-        # Возврат книг посетителя:
-        if return_books_id:
-            for book_id in return_books_id:
-                result = library.return_book(book_id, user_id)
-                print("Return result: %s" % result)
-
 
     user = library.session.query(User).filter(User.user_id == user_id).first()
     print('UU: ' + str((user)))
     if not user:  # Проверяем, найден ли пользователь с таким ID
         return 'Can`t find such user! :('
     else:
+        suitable_books = []
+        # Если пришли данные из формы страницы, то обрабатываем их:
+        if request.form:
+            # Возврат книг посетителя:
+            return_books_id = request.form.getlist("return_book_id")
+            if return_books_id:
+                for book_id in return_books_id:
+                    result = library.return_book(book_id, user_id)
+                    print("Return result: %s" % result)
+
+            # Поиск книг в библиотеке:
+            search_by = request.form.get("search_by")
+            if search_by:
+                search_text = request.form.get("search_text")
+                if search_text:
+                    #print("Parameter: %s; Search text: %s" % (search_by, search_text))
+                    suitable_books = library.find_books(search_by, search_text)
+                    #print("Suitable_books: " + str(suitable_books))
+
         # Если у пользователя на руках есть книги (список list_of_book_id - не пуст) - запрашиваем их данные:
         borrowed_books = []
         if user.list_of_books_id:
@@ -86,7 +96,7 @@ def show_user(user_id):
             borrowed_books[i].date_of_return_human_format = datetime.datetime.fromtimestamp(
                 borrowed_books[i].date_of_return).strftime("%d-%m-%Y")
 
-        return render_template('user_card.html', user=user, books=borrowed_books)
+        return render_template('user_card.html', user=user, books=borrowed_books, suitable_books = suitable_books)
 
 if __name__ == '__main__':
     library = Library('Детскя библиотека №28')

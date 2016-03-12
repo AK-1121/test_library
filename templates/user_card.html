@@ -35,6 +35,45 @@
 
     </table>
 </form>
-
+Найти книгу в библиотеке:
+<form method="post">
+    <table border="1">
+        <tr>
+            <td>Поиск по:</td>
+            <td>
+                <select name="search_by">
+                    <option value="title">название книги</option>
+                    <option value="author">автор книги</option>
+                    <option value="year_of_publishing">год издания</option>
+                    <option value="book_code">код книги</option>
+                    <option value="group_code">код раздела</option>
+                </select>
+            </td>
+            <td><input type="text" name="search_text"></td>
+            <td><input type="submit" value="Искать!"></td>
+        </tr>
+    </table>
+</form>
+{% if suitable_books %}
+<form method="post">
+    <table border="2" bordercolor='blue' width="600">
+    <tr>
+        <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
+        <td>Выдана ли</td><td>Кто взял</td><td>Дата возврата</td>
+    </tr>
+    {% for book in suitable_books %}
+    <tr>
+        <td>{{ book.book_id }}</td>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.year_of_publishing }}</td>
+        <td>{{ book.date_of_return }}</td>
+        <td>{{ book.user_id }} </td>
+        <td bgcolor={{ book.warning_color }}>{{ book.date_of_return_str }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+</form>
+{% endif %}
 </body>
 </html>
