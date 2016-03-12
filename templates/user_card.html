@@ -35,6 +35,16 @@
 
     </table>
 </form>
+
+<br>
+<table border="1">
+    <tr><td>Информация</td></tr>
+    {% for info in info_list %}
+    <tr><td>{{ info }}</td></tr>
+    {% endfor %}
+</table>
+
+<br>
 Найти книгу в библиотеке:
 <form method="post">
     <table border="1">
@@ -59,7 +69,7 @@
     <table border="2" bordercolor='blue' width="600">
     <tr>
         <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
-        <td>Выдана ли</td><td>Кто взял</td><td>Дата возврата</td>
+        <td>Дата возврата</td><td>Действие</td>
     </tr>
     {% for book in suitable_books %}
     <tr>
@@ -67,9 +77,13 @@
         <td>{{ book.title }}</td>
         <td>{{ book.author }}</td>
         <td>{{ book.year_of_publishing }}</td>
-        <td>{{ book.date_of_return }}</td>
-        <td>{{ book.user_id }} </td>
-        <td bgcolor={{ book.warning_color }}>{{ book.date_of_return_str }}</td>
+        <td>{{ book.date_of_return_human_format }}</td>
+        <td>
+            {% if book.date_of_return_human_format == "Свободна" %}
+                <input type="radio" name="hand_out_book_id" value = {{ book.book_id }}>
+                <input type="submit" value="Выдать">
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
     </table>

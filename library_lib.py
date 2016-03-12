@@ -1,3 +1,4 @@
+import datetime
 import time
 from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_, func
 from sqlalchemy.orm import mapper, sessionmaker
@@ -66,6 +67,13 @@ class Book(Base):
             self.is_checked_out = False
             return True
         else: return False
+
+    # Change date of return from Unix format to format comfortable for human reading:
+    def date_of_return_str(self):
+        if self.date_of_return:
+            return datetime.datetime.fromtimestamp(self.date_of_return).strftime("%d-%m-%Y")
+        else:
+            return None
         
 
 user_id = 0  # Unique user identifier in the library.

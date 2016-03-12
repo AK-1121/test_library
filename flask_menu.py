@@ -62,14 +62,18 @@ def add_user():
 def show_user(user_id):
 
     user = library.session.query(User).filter(User.user_id == user_id).first()
-    print('UU: ' + str((user)))
     if not user:  # Проверяем, найден ли пользователь с таким ID
         return 'Can`t find such user! :('
     else:
         suitable_books = []
+        info_list = []  # Information messages.
+        info_list.append("Дата возврата для сегодняшнего дня: %s" % datetime.datetime.fromtimestamp(time.time() +
+                         14*24*60*60).strftime("%d-%m-%Y"))
+
         # Если пришли данные из формы страницы, то обрабатываем их:
         if request.form:
             # Возврат книг посетителя:
+            print("R_F: " + str(request.form))
             return_books_id = request.form.getlist("return_book_id")
             if return_books_id:
                 for book_id in return_books_id:
@@ -84,6 +88,20 @@ def show_user(user_id):
                     #print("Parameter: %s; Search text: %s" % (search_by, search_text))
                     suitable_books = library.find_books(search_by, search_text)
                     #print("Suitable_books: " + str(suitable_books))
+                    for i in range(len(suitable_books)):
+                        if suitable_books[i].date_of_return:
+                            suitable_books[i].date_of_return_human_format = datetime.datetime.fromtimestamp(
+                                suitable_books[i].date_of_return).strftime("%d-%m-%Y")
+                        else:
+                            suitable_books[i].date_of_return_human_format = "Свободна"
+
+            # Выдача запрошенной книги:
+            hand_out_book_id = request.form.get("hand_out_book_id")
+            if hand_out_book_id:
+                if "successfully" in library.hand_out_book(hand_out_book_id, user_id):
+                    book = library.find_books('book_id', hand_out_book_id)[0]
+                    info_list.append("Книга: {0} - {1} (Id: {2}) успешно выдана до {3}".format(book.title,
+                                     book.author, book.book_id, book.date_of_return_str()))
 
         # Если у пользователя на руках есть книги (список list_of_book_id - не пуст) - запрашиваем их данные:
         borrowed_books = []
@@ -96,7 +114,8 @@ def show_user(user_id):
             borrowed_books[i].date_of_return_human_format = datetime.datetime.fromtimestamp(
                 borrowed_books[i].date_of_return).strftime("%d-%m-%Y")
 
-        return render_template('user_card.html', user=user, books=borrowed_books, suitable_books = suitable_books)
+        return render_template('user_card.html', user=user, books=borrowed_books, suitable_books = suitable_books,
+                               info_list = info_list)
 
 if __name__ == '__main__':
     library = Library('Детскя библиотека №28')
