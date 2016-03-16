@@ -19,11 +19,11 @@ def hello_world():
 
 @app.route('/')
 def list_menu():
-    pass
+    return redirect("/show_users")
 
 
-@app.route('/show_books')
-def show_books():
+@app.route('/show_all_books')
+def show_all_books():
     books_list = library.list_all_books()
     for book in books_list:
         # Устанавливаем значение "Выдана" или "Не выдана":
@@ -38,7 +38,6 @@ def show_books():
         book.warning_color = 'white'
         if book.date_of_return:
             # Проверяем, не просрочена ли книга:
-            print("XS: " + str(book.date_of_return))
             if int(book.date_of_return) < datetime.datetime.now().timestamp():
                 book.expired_flag = True
                 book.warning_color = 'red'
@@ -47,17 +46,66 @@ def show_books():
         else:
             book.date_of_return_str = '-'
 
-    return render_template('show_books.html', lib_name=library.name_of_lib, books=books_list)
+    return render_template('show_all_books.html', lib_name=library.name_of_lib, books=books_list)
 
 
-@app.route('/add_book')
+@app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
-    pass
+    info_list = []
+    if request.form:
+        title = request.form['title']
+        author = request.form['author']
+        year_of_publishing = request.form['year_of_publishing']
+        book_code = request.form['book_code']
+        group_code = request.form['group_code']
+        if title and author and year_of_publishing and book_code and group_code:
+            book_id = library.add_book(title, author, book_code, group_code, year_of_publishing)
+            info_list.append(str(current_dt()) + " - книга %s - %s (ID: %s) была добавлена" %(title, author, book_id))
+            return render_template("add_user.html", info_list=info_list)
+        else:
+            info_list.append(current_dt() + " Книга не добавлена!!! Не все параметры заполнены!!!")
+    else:
+        info_list.append("Текущее время: %s" % current_dt())
+
+    return render_template("add_book.html", info_list=info_list)
 
 
-@app.route('/search_book')
-def search_book():
-    pass
+
+@app.route('/show_books', methods=['GET', 'POST'])
+def show_books():
+    print("TY^")
+    if request.form:
+        # Process searching of book request:
+        search_by = request.form.get("search_by")
+        if search_by:
+            search_text = request.form.get("search_text")
+            suitable_books = library.find_books(search_by, search_text)
+
+            for book in suitable_books:
+                # Устанавливаем значение "Выдана" или "Не выдана":
+                if book.is_checked_out == 1:
+                    book.status = "Выдана"
+                elif book.is_checked_out == 0:
+                    book.status = "Не выдана"
+                else:
+                    book.status = book.is_checked_out
+
+                book.expired_flag = False
+                book.warning_color = 'white'
+                if book.date_of_return:
+                    # Проверяем, не просрочена ли книга:
+                    if int(book.date_of_return) < datetime.datetime.now().timestamp():
+                        book.expired_flag = True
+                        book.warning_color = 'red'
+                    # Переводим дату возврата из Unix timestamp:
+                    book.date_of_return_str = datetime.datetime.fromtimestamp(int(book.date_of_return)).strftime("%Y-%m-%d")
+                else:
+                    book.date_of_return_str = '-'
+
+            return render_template("show_books.html", suitable_books=suitable_books, search_params=(
+                book_search_params[search_by], search_text
+            ))
+    return render_template("show_books.html")
 
 
 @app.route('/show_users', methods=['GET', 'POST'])
@@ -93,6 +141,9 @@ def add_user():
             user_id = library.add_user(name, passport_id, address, phone)
             info_list.append(current_dt() + " - пользователь %s (ID: %s) был добавлен" %(name, user_id))
             return render_template("add_user.html", info_list=info_list)
+        else:
+            info_list.append("Пользователь не добавлен!!! Не все параметры заполнены!!!")
+
     else:
         info_list.append("Текущее время: %s" % current_dt())
 

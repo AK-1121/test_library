@@ -1,30 +1,56 @@
-<html>
-<head>
-    <title>Books list</title>
-</head>
+{% extends "base.html" %}
 
-<body>
-<h3>Библиотека: {{ lib_name }}</h3>
-<h3>Список имеющихся книг:</h3>
-<table border="2" bordercolor='blue' width="600">
-    <tr>
-        <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
-        <td>Выдана ли</td><td>Кто взял</td><td>Дата возврата</td>
-    </tr>
-    {% for book in books %}
-<tr>
-    <td>{{ book.book_id }}</td>
-    <td>{{ book.title }}</td>
-    <td>{{ book.author }}</td>
-    <td>{{ book.year_of_publishing }}</td>
-    <td>{{ book.status }}</td>
-    <td>{{ book.user_id }} </td>
-    <td bgcolor={{ book.warning_color }}>{{ book.date_of_return_str }}</td>
-</tr>
-{% endfor %}
-</table>
-</body>
-</html>
+{% block content %}
 
+<b><a href="/add_book">Добавить книгу</a></b><br>
+<b><a href="/show_all_books">Показать все книги</a></b><br>
 
+<b>Найти книгу:</b>
+<form method="post" action="/show_books">
+    <table border="1" width="100%">
+        <tr>
+            <td>
+                <select name="search_by">
+                    <option value="title">название</option>
+                    <option value="author">автор</option>
+                    <option value="book_id">внутренний идентификатор</option>
+                    <option value="year_of_publishing">год издания</option>
+                    <option value="book_code">код книги</option>
+                    <option value="group_code">код раздела</option>
+                </select>
+            </td>
+            <td><input type="text" name="search_text"></td>
+            <td><input type="submit" value="Искать"></td>
+        </tr>
+    </table>
+</form>
+<br>
 
+{% if suitable_books %}
+    <b>Подходящие книги:</b>
+    <form method="post">
+        <table border="2" bordercolor='blue' width="100%">
+            <tr>
+                <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
+                <td>Выдана ли</td><td>Кто взял</td><td>Дата возврата</td>
+            </tr>
+            {% for book in suitable_books %}
+        <tr>
+            <td>{{ book.book_id }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.year_of_publishing }}</td>
+            <td>{{ book.status }}</td>
+            {% if book.user_id %}
+                <td><a href="/book/{{ book.book_id }}">id:_{{ book.book_id }}</a></td>
+            {% else %}
+                <td>{{ book.user_id }} </td>
+            {% endif %}
+            <td bgcolor={{ book.warning_color }}>{{ book.date_of_return_str }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+    </form>
+{% endif %}
+
+{% endblock %}

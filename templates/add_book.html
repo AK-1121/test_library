@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="post">
+        <table border="2" width="100%" bgcolor="#F3F3FD">
+            <tr>
+                <td>Название книги</td>
+                <td><input type="text" name="title" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Автор(ы):</td>
+                <td><input type="text" name="author" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Год издания</td>
+                <td><input type="text" name="year_of_publishing" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Код книги</td>
+                <td><input type="text" name="book_code" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Код раздела</td>
+                <td><input type="text" name="group_code" size="60%"></td>
+            </tr>
+
+            <tr>
+                <td colspan="2"><center><input type="submit" value="Добавить"></center></td>
+            </tr>
+        </table>
+
+    </form>
+
+    {% if info_list %}
+        <i>
+            <table border="1" width="100%">
+                <tr><td>Информация</td></tr>
+                {% for info in info_list %}
+                <tr><td>{{ info }}</td></tr>
+                {% endfor %}
+            </table>
+        </i>
+    {% endif %}
+
+{% endblock %}

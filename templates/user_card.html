@@ -2,8 +2,9 @@
 
 {% block content %}
 
-<table border="1" >
-    <tr><td><b>Имя:</b></td><td><b>{{ user.name }}</b></td></tr>
+<table border="1" width="100%">
+    <tr><td><b>Имя:</b></td><td width="75%"><b>{{ user.name }}</b></td></tr>
+    <tr><td>ID посетителя:</td><td>{{ user.user_id }}</td></tr>
     <tr><td>Паспорт:</td><td>{{ user.passport_id }}</td></tr>
     <tr><td>Адрес:</td><td>{{ user.address }}</td></tr>
     <tr><td>Телефон:</td><td>{{ user.phone }}</td></tr>
