@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<b><a href="/show_users?all_users=1">Показать всех пользователей</a></b><br>
+
+<b>Найти пользователя:</b>
+<form method="post">
+    <table border="1" width="100%">
+        <tr>
+            <td>
+                <select name="search_by">
+                    <option value="name">ФИО</option>
+                    <option value="passport_id">номер паспорта</option>
+                    <option value="user_id">внутренний идентификатор</option>
+                    <option value="address">адрес</option>
+                    <option value="phone">телефон</option>
+                </select>
+            </td>
+            <td><input type="text" name="search_text"></td>
+            <td><input type="submit" value="Искать"></td>
+        </tr>
+    </table>
+</form>
+{% if suitable_users %}
+
+<br>
+<b>Подходящие пользователи:</b>
+<table border="1" width="100%">
+    <tr>
+        <td colspan="5">
+            <i>Поиск по: </i> {{ search_params[0] }}<br>
+            <i>Значение поиска:</i> {{ search_params[1] }}
+        </td>
+    </tr>
+    <tr>
+        <td>ID</td>
+        <td>ФИО</td>
+        <td>Паспорт</td>
+        <td>Адрес</td>
+        <td>Телефон</td>
+    </tr>
+    {% for user in suitable_users %}
+        <tr>
+            <td>{{ user.user_id }}</td>
+            <td><a href="/user/{{ user.user_id }}">{{ user.name }}</a></td>
+            <td>{{ user.passport_id }}</td>
+            <td>{{ user.address }}</td>
+            <td>{{ user.phone }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

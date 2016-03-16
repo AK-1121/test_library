@@ -1,19 +1,26 @@
 import datetime
 import time
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from library_lib import Library, Book, User
 
+user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
+                      "address": "адрес", "phone": "телефон"}
+book_search_params = {"title": "название книги", "author": "автор книги", "year_of_publishing": "год издания",
+                      "book_code": "код книги", "group_code": "код раздела"}
 
 app = Flask(__name__)
+
 
 @app.route('/hello')
 def hello_world():
     return "Hello magic world!!!"
 
+
 @app.route('/')
 def list_menu():
     pass
+
 
 @app.route('/show_books')
 def show_books():
@@ -42,21 +49,34 @@ def show_books():
 
     return render_template('show_books.html', lib_name=library.name_of_lib, books=books_list)
 
+
 @app.route('/add_book')
 def add_book():
     pass
+
 
 @app.route('/search_book')
 def search_book():
     pass
 
-@app.route('/show_users')
+
+@app.route('/show_users', methods=['GET', 'POST'])
 def show_users():
-    pass
+    if request.form:
+        search_by = request.form.get("search_by")
+        if search_by:
+            search_text = request.form.get("search_text")
+            suitable_users = library.find_users(search_by, search_text)
+            return render_template("show_users.html", suitable_users=suitable_users, search_params=(
+                                   user_search_params[search_by],  search_text))
+
+    return render_template("show_users.html")
+
 
 @app.route('/add_user')
 def add_user():
     pass
+
 
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
 def show_user(user_id):
@@ -85,9 +105,9 @@ def show_user(user_id):
             if search_by:
                 search_text = request.form.get("search_text")
                 if search_text:
-                    #print("Parameter: %s; Search text: %s" % (search_by, search_text))
+                    # print("Parameter: %s; Search text: %s" % (search_by, search_text))
                     suitable_books = library.find_books(search_by, search_text)
-                    #print("Suitable_books: " + str(suitable_books))
+                    # print("Suitable_books: " + str(suitable_books))
                     for i in range(len(suitable_books)):
                         if suitable_books[i].date_of_return:
                             suitable_books[i].date_of_return_human_format = datetime.datetime.fromtimestamp(
@@ -114,8 +134,8 @@ def show_user(user_id):
             borrowed_books[i].date_of_return_human_format = datetime.datetime.fromtimestamp(
                 borrowed_books[i].date_of_return).strftime("%d-%m-%Y")
 
-        return render_template('user_card.html', user=user, books=borrowed_books, suitable_books = suitable_books,
-                               info_list = info_list)
+        return render_template('user_card.html', user=user, books=borrowed_books, suitable_books=suitable_books,
+                               info_list=info_list)
 
 if __name__ == '__main__':
     library = Library('Детскя библиотека №28')

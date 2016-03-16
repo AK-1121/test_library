@@ -1,9 +1,6 @@
-<html>
-<head>
-    <title>Карточка: {{ user.name }} (ID: {{ user.user_id }})</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block content %}
 <h3>Имя: {{ user.name }}</h3>
 <table border="1" >
     <tr><td>Паспорт:</td><td>{{ user.passport_id }}</td></tr>
@@ -12,7 +9,7 @@
 </table>
 Выданные книги:
 <form method="post">
-    <table border="2">
+    <table border="2" width="100%">
         <tr>
             <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
             <td>Дата возврата</td><td>Возврат</td>
@@ -37,7 +34,7 @@
 </form>
 
 <br>
-<table border="1">
+<table border="1" width="90%">
     <tr><td>Информация</td></tr>
     {% for info in info_list %}
     <tr><td>{{ info }}</td></tr>
@@ -47,7 +44,7 @@
 <br>
 Найти книгу в библиотеке:
 <form method="post">
-    <table border="1">
+    <table border="1" width="100%">
         <tr>
             <td>Поиск по:</td>
             <td>
@@ -82,6 +79,8 @@
             {% if book.date_of_return_human_format == "Свободна" %}
                 <input type="radio" name="hand_out_book_id" value = {{ book.book_id }}>
                 <input type="submit" value="Выдать">
+            {% else %}
+                ---
             {% endif %}
         </td>
     </tr>
@@ -89,5 +88,5 @@
     </table>
 </form>
 {% endif %}
-</body>
-</html>
+
+{% endblock %}

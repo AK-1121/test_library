@@ -1,6 +1,6 @@
 import datetime
 import time
-from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_, func
+from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_, func, Text
 from sqlalchemy.orm import mapper, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.ext.declarative import declarative_base
@@ -185,6 +185,22 @@ class Library:
 
     def list_all_users(self):
         return self.session.query(User).all()
+
+    def find_users(self, search_parameter, search_value):
+        ''' Find users with determined attribute and its value.
+        :param search_parameter: book attribute for searching
+        :param search_value: book attribute`s value
+        :return: 1) in case of correct search parameters return tuple:
+            (a, b) where a - list of suitable book objects,
+            b - list of book attributes
+            2) in case of incorrect search parameters return tuple: ('Err', 'Err')
+        '''
+
+        #suitable_books = self.session.query(Book).filter(getattr(Book, search_parameter) == search_value).all()
+        suitable_users = self.session.query(User).filter(getattr(User, search_parameter).contains(search_value)).all()
+
+        return suitable_users
+
 
     def remove_user(self, user_id):
         """
