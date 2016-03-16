@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3>Имя: {{ user.name }}</h3>
+
 <table border="1" >
+    <tr><td><b>Имя:</b></td><td><b>{{ user.name }}</b></td></tr>
     <tr><td>Паспорт:</td><td>{{ user.passport_id }}</td></tr>
     <tr><td>Адрес:</td><td>{{ user.address }}</td></tr>
     <tr><td>Телефон:</td><td>{{ user.phone }}</td></tr>
 </table>
-Выданные книги:
+<br>
+
 <form method="post">
     <table border="2" width="100%">
+        <tr><td colspan="6"><b>Выданные книги:</b></td></tr>
         <tr>
             <td>ID</td><td>Название</td><td>Автор(ы)</td><td>Год издания</td>
             <td>Дата возврата</td><td>Возврат</td>
@@ -26,18 +29,19 @@
             </td>
         </tr>
     {% endfor %}
-    <tr>
-        <td><input type="submit" value="Вернуть книгу"></td>
-    </tr>
-
+    {% if books %}
+        <tr>
+            <td><input type="submit" value="Вернуть книгу"></td>
+        </tr>
+    {% endif %}
     </table>
 </form>
 
 <br>
 <table border="1" width="90%">
-    <tr><td>Информация</td></tr>
+    <tr><td><b>Информация</b></td></tr>
     {% for info in info_list %}
-    <tr><td>{{ info }}</td></tr>
+        <tr><td><i>{{ info }}</i></td></tr>
     {% endfor %}
 </table>
 

@@ -181,7 +181,7 @@ class Library:
         user = User(user_id + 1, name, passport_id, address, phone)
         self.session.add(user)
         self.session.commit()
-        return user_id
+        return user_id + 1
 
     def list_all_users(self):
         return self.session.query(User).all()
@@ -331,6 +331,11 @@ class Library:
             return 0
         
 
-    
-        
-        
+# Funtion return current datetime as strftime:
+def current_dt():
+    return datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+
+# Funtion return current date as strftime:
+def current_date():
+    return datetime.datetime.now().strftime("%d-%m-%Y")

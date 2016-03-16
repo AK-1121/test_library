@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="post">
+        <table border="2" width="100%" bgcolor="#F3F3FD">
+            <tr>
+                <td>ФИО</td>
+                <td><input type="text" name="name" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Номер паспорта</td>
+                <td><input type="text" name="passport_id" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Адрес</td>
+                <td><input type="text" name="address" size="60%"></td>
+            </tr>
+            <tr>
+                <td>Телефон</td>
+                <td><input type="text" name="phone" size="60%"></td>
+            </tr>
+            <tr>
+                <td colspan="2"><center><input type="submit" value="Добавить"></center></td>
+            </tr>
+        </table>
+
+    </form>
+
+    {% if info_list %}
+        <i>
+            <table border="1" width="100%">
+                <tr><td>Информация</td></tr>
+                {% for info in info_list %}
+                <tr><td>{{ info }}</td></tr>
+                {% endfor %}
+            </table>
+        </i>
+    {% endif %}
+
+{% endblock %}

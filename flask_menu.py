@@ -2,7 +2,7 @@ import datetime
 import time
 
 from flask import Flask, render_template, request, redirect
-from library_lib import Library, Book, User
+from library_lib import Library, Book, User, current_date, current_dt
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
                       "address": "адрес", "phone": "телефон"}
@@ -63,6 +63,7 @@ def search_book():
 @app.route('/show_users', methods=['GET', 'POST'])
 def show_users():
     if request.form:
+        # Process search users request:
         search_by = request.form.get("search_by")
         if search_by:
             search_text = request.form.get("search_text")
@@ -73,9 +74,29 @@ def show_users():
     return render_template("show_users.html")
 
 
-@app.route('/add_user')
+@app.route('/show_all_users')
+def show_all_users():
+    all_users = library.list_all_users()
+    return render_template("show_users.html", suitable_users=all_users, search_params=("Все пользователи", '-'))
+
+
+# Add new user:
+@app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
-    pass
+    info_list = []
+    if request.form:
+        name = request.form['name']
+        passport_id = request.form['passport_id']
+        address = request.form['address']
+        phone = request.form['phone']
+        if name and passport_id and address and phone:
+            user_id = library.add_user(name, passport_id, address, phone)
+            info_list.append(current_dt() + " - пользователь %s (ID: %s) был добавлен" %(name, user_id))
+            return render_template("add_user.html", info_list=info_list)
+    else:
+        info_list.append("Текущее время: %s" % current_dt())
+
+    return render_template("add_user.html", info_list=info_list)
 
 
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
