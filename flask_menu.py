@@ -2,6 +2,7 @@ import datetime
 import time
 
 from flask import Flask, render_template, request, redirect
+from flask.ext.login import LoginManager
 from library_lib import Library, Book, User, current_date, current_dt
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
@@ -15,11 +16,6 @@ app = Flask(__name__)
 @app.route('/hello')
 def hello_world():
     return "Hello magic world!!!"
-
-
-@app.route('/')
-def list_menu():
-    return redirect("/show_users")
 
 
 @app.route('/show_all_books')
@@ -70,10 +66,8 @@ def add_book():
     return render_template("add_book.html", info_list=info_list)
 
 
-
 @app.route('/show_books', methods=['GET', 'POST'])
 def show_books():
-    print("TY^")
     if request.form:
         # Process searching of book request:
         search_by = request.form.get("search_by")
@@ -106,6 +100,20 @@ def show_books():
                 book_search_params[search_by], search_text
             ))
     return render_template("show_books.html")
+
+
+@app.route('/book/<int:book_id>')
+def show_book(book_id):
+    book = library.find_books("book_id", book_id)[0]
+    book.date_of_return_str = book.date_of_return_str()
+    return render_template("book_card.html", book=book)
+# ! ---- End of book methods ----- !
+
+
+# <---- Start of user methods: ---->
+@app.route('/')
+def list_menu():
+    return redirect("/show_users")
 
 
 @app.route('/show_users', methods=['GET', 'POST'])
@@ -211,5 +219,8 @@ def show_user(user_id):
 
 if __name__ == '__main__':
     library = Library('Детскя библиотека №28')
+    login_manager = LoginManager()
+    login_manager.init_app(app)
     app.debug = True
     app.run()
+

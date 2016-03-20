@@ -1,2 +1,3 @@
 SQLAlchemy==1.0.9
 flask
+Flask-Login

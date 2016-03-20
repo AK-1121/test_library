@@ -36,13 +36,13 @@
             </tr>
             {% for book in suitable_books %}
         <tr>
-            <td>{{ book.book_id }}</td>
+            <td><a href="/book/{{ book.book_id }}">id_{{ book.book_id }}</a></td>
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
             <td>{{ book.year_of_publishing }}</td>
             <td>{{ book.status }}</td>
             {% if book.user_id %}
-                <td><a href="/book/{{ book.book_id }}">id:_{{ book.book_id }}</a></td>
+                <td><a href="/user/{{ book.user_id }}">id:_{{ book.user_id }}</a></td>
             {% else %}
                 <td>{{ book.user_id }} </td>
             {% endif %}

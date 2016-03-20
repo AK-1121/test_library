@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table border="1" width="80%">
+    <tr><td>ID книги</td><td>{{ book.book_id }}</td></tr>
+    <tr><td>Название книги</td><td>{{ book.title }}</td></tr>
+    <tr><td>Автор(ы)</td><td>{{ book.author }}</td></tr>
+    <tr><td>Год издания</td><td>{{ book.year_of_publishing }}</td></tr>
+    <tr><td>Код книги</td><td>{{ book.book_code }}</td></tr>
+    <tr><td>Код раздела</td><td>{{ book.group_code }}</td></tr>
+    {% if book.is_checked_out %}
+        <tr><td>Статус</td><td>Выдана</td></tr>
+        <tr><td>Дата возврата</td><td>{{ book.date_of_return_str }}</td></tr>
+        <tr><td>Кто взял книгу (ID)</td><td><a href="/user/{{ book.user_id }}">id_{{ book.user_id }}</a></td></tr>
+    {% else %}
+        <tr><td>Статус</td><td>Не выдана</td></tr>
+        <tr><td>Дата возврата</td><td> --- </td></tr>
+        <tr><td>Кто взял книгу (ID)</td><td> --- </td></tr>
+    {% endif %}
+</table>
+
+{% endblock %}
