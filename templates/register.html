@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="post">
+    <table border="1" width="100%">
+        <tr><td>Логин*</td><td><input type="text" name="user_name" size="70%"></td></tr>
+        <tr><td>Пароль*</td><td><input type="text" name="password" size="70%"></td></tr>
+        <tr><td>ФИО*</td><td><input type="text" name="real_name" size="70%"></td></tr>
+        <tr>
+            <td>Статус(права доступа)*</td>
+            <td>
+                <select name="status">
+                    <option value="1">пользователь</option>
+                    <option value="2">администратор</option>
+                </select>
+            </td>
+        </tr>
+        <tr><td>Электронная почта</td><td><input type="text" name="email" size="70%"></td></tr>
+        <tr><td>Телефон</td><td><input type="text" name="phone" size="70%"></td></tr>
+        <tr><td>Адрес</td><td><input type="text" name="address" size="70%"></td></tr>
+        <tr><td>Личная информация</td><td><input type="text" name="personal_info" size="70%"></td></tr>
+        <tr><td colspan="2" align="center"><input type="submit" value="Добавить сотрудника"></td> </tr>
+    </table>
+</form>
+
+{% if info_list %}
+    <table border="1" width="90%">
+        <tr><td><b>Информация</b></td></tr>
+        {% for info in info_list %}
+            <tr><td><i>{{ info }}</i></td></tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% endblock %}

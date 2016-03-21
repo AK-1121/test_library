@@ -3,7 +3,6 @@ import time
 from sqlalchemy import ForeignKey, MetaData, Table, Column, INTEGER, String, create_engine, exists, and_, func, Text
 from sqlalchemy.orm import mapper, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy.ext.declarative import declarative_base
 
 book_id = 0  # Unique book identifier in the library
 Base = declarative_base()  # Parent class for Book and User
@@ -104,6 +103,31 @@ class User(Base):
         pass
 
 
+# Класс "Библиотекарь", описывающий пользователей системы:
+class Librarian(Base):
+    __table__ = Table('librarians', Base.metadata,
+                        Column('user_name', String(100), primary_key=True, nullable=False),
+                        Column('real_name', String(250), nullable=False),
+                        Column('password', String(100), nullable=False),
+                        Column('status', INTEGER, nullable=False),  # 1 - ordinary rights; 2 - admin rights; 0 - blocked
+                        Column('email', String(100)),
+                        Column('personal_info', Text(10000)),
+                        Column('phone', String(100)),
+                        Column('address', Text(2000)),
+                     )
+
+    def __init__(self, user_name, real_name, password, status=1, email=None, personal_info=None, phone=None,
+                 address=None):
+        self.user_name = user_name
+        self.real_name = real_name
+        self.password = password
+        self.status = status
+        self.email = email
+        self.personal_info = personal_info
+        self.phone = phone
+        self.address = address
+
+
 class Library:
     '''Describes library object.'''
     
@@ -114,46 +138,8 @@ class Library:
         self.book_titles = []  # List of book names.
         self.index_of_books = {}  # Dictionary of indexes of books.
         #  DB section:
-        #self.db = create_engine('sqlite:///library.db', echo=True)  # Access the DB Engine
-        #self.db = create_engine('sqlite:///library.db', echo=False)  # Access the DB Engine
         self.db = create_engine('sqlite:///{0}'.format(lib_path), echo=False)  # Access the DB Engine
-        #  echo=False – if True, the Engine will log all statements as well as\n"
-        #  a repr() of their parameter lists to the engines logger, which \n"
-        #  defaults to sys.stdout\n"
-        #metadata1 = MetaData()
-        #metadata = MetaData()
-        """
-        self.users = Table('users', metadata1,
-                           Column('user_id', INTEGER, primary_key=True),
-                           Column('name', String(100), nullable=False),
-                           Column('passport_id', String(50), nullable=False),
-                           Column('address', String(250), nullable=False),
-                           Column('phone', String(25)),
-                           Column('list_of_books_id', String(250)),
-                           Column('info11', String(200)),  # Reserved field 1.
-                           Column('info12', String(200)),  # Reserved filed 2.
-                           )
-
-
-
-        self.books = Table('books', metadata,
-                           Column('book_id', INTEGER, primary_key=True),
-                           Column('title', String(200), nullable=False),
-                           Column('author', String(200), nullable=False),
-                           Column('book_code', String(20)),
-                           Column('group_code', String(20)),
-                           Column('year_of_publishing', INTEGER),
-                           Column('is_checked_out', INTEGER),  # True if book is checked out.
-                           Column('date_of_return', INTEGER),  # Store as Unix Time
-                           #Column('user_id', INTEGER, ForeignKey('users.user_id')),  # User ID who took the book
-                           Column('user_id', INTEGER),  # User ID who took the book
-                           Column('info1', String(200)),  # Reserved field 1.
-                           Column('info2', String(200)),  # Reserved filed 2.
-                           )
-        """
-        #metadata.create_all(self.db)
         Base.metadata.create_all(self.db)
-        #metadata1.create_all(self.db)
         self.Session = sessionmaker(bind=self.db)
         self.session = self.Session()
 

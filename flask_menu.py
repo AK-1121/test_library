@@ -3,7 +3,7 @@ import time
 
 from flask import Flask, render_template, request, redirect
 from flask.ext.login import LoginManager
-from library_lib import Library, Book, User, current_date, current_dt
+from library_lib import Library, Book, User, Librarian, current_date, current_dt
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
                       "address": "адрес", "phone": "телефон"}
@@ -216,6 +216,48 @@ def show_user(user_id):
 
         return render_template('user_card.html', user=user, books=borrowed_books, suitable_books=suitable_books,
                                info_list=info_list)
+
+
+# < ---- Start of authorization session ----
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+    info_list = []
+    if len(request.form['password']) < 5:
+        info_list.append(current_dt() + " - ошибка создания пользователя. Пароль слишком короткий (< 5 символов).")
+        return render_template('register.html', info_list = info_list)
+    # Проверям заполненность обязательных полей в форме:
+    elif (request.form['user_name'] and request.form['real_name'] and
+            request.form['password'] and request.form['status']):
+        librarian = Librarian(request.form['user_name'], request.form['real_name'], request.form['password'],
+                              request.form['status'], request.form['email'], request.form['personal_info'],
+                              request.form['phone'], request.form['address'])
+    else:
+        # Составляем список не заполненных обязательных полей в форме:
+        tmp_str = ("; ").join(filter(None, ["Логин"*(bool(request.form['user_name'])^1),
+                                            "Пароль"*(bool(request.form['password'])^1),
+                                            "ФИО"*(bool(request.form['real_name'])^1),
+                                            "Статус"*(bool(request.form['status'])^1)]))
+
+        info_list.append(current_dt() + (" - нельзя зарегистрировать пользователя. Необходимые обязательные поля "
+                                        "не указаны: " + tmp_str + "."))
+        return render_template('register.html', info_list = info_list)
+    #print('RRR: ' + str(request.form))
+    #print("1: %s, 2: %s, 3: %s, 4: %s, 5: %s, 6: %s, 7: %s, 8: %s" %(
+    #      request.form['user_name'], request.form['real_name'], request.form['password'], request.form['status'],
+    #      request.form['email'], request.form['personal_info'], request.form['phone'], request.form['address']))
+    #librarian = Librarian('testtest', 'Алексей К.', '12341234', '1', "test@tester.ru")
+    library.session.add(librarian)
+    library.session.commit()
+    info_list.append(current_dt() + " - пользователь {0} ({1}) успешно зарегистрирован".format(librarian.user_name,
+                                                                                                   librarian.real_name))
+    #except Exception as e:
+    #    info_list.append(current_dt() + " - пользователя {0} ({1}) зарегистрировать не удалось".format(
+    #            librarian.user_name, librarian.real_name) + ' Ошибка: %s (%s)' % (e.__class__, e.__context__))
+
+    return render_template('register.html', info_list = info_list)
+
 
 if __name__ == '__main__':
     library = Library('Детскя библиотека №28')

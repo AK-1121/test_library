@@ -1,2 +1,6 @@
 - gui with flask
 - try with another DB
+
+
+- flask-login links:
+https://blog.openshift.com/use-flask-login-to-add-user-authentication-to-your-python-application/
