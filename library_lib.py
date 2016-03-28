@@ -114,6 +114,7 @@ class Librarian(Base):
                         Column('personal_info', Text(10000)),
                         Column('phone', String(100)),
                         Column('address', Text(2000)),
+                        Column('creation_date', INTEGER)
                      )
 
     def __init__(self, user_name, real_name, password, status=1, email=None, personal_info=None, phone=None,
@@ -126,6 +127,20 @@ class Librarian(Base):
         self.personal_info = personal_info
         self.phone = phone
         self.address = address
+        self.creation_date = int(time.time())
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        #return unicode(self.id)
+        return self.user_name
 
 
 class Library:

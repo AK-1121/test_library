@@ -1,8 +1,8 @@
 import datetime
 import time
 
-from flask import Flask, render_template, request, redirect
-from flask.ext.login import LoginManager
+from flask import Flask, flash, render_template, request, redirect, url_for
+from flask.ext.login import LoginManager, login_user
 from library_lib import Library, Book, User, Librarian, current_date, current_dt
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
@@ -218,21 +218,23 @@ def show_user(user_id):
                                info_list=info_list)
 
 
-# < ---- Start of authorization session ----
+# < ---- Start of authorization session ---- >
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
         return render_template('register.html')
     info_list = []
-    if len(request.form['password']) < 5:
-        info_list.append(current_dt() + " - ошибка создания пользователя. Пароль слишком короткий (< 5 символов).")
-        return render_template('register.html', info_list = info_list)
     # Проверям заполненность обязательных полей в форме:
-    elif (request.form['user_name'] and request.form['real_name'] and
+    if (request.form['user_name'] and request.form['real_name'] and
             request.form['password'] and request.form['status']):
-        librarian = Librarian(request.form['user_name'], request.form['real_name'], request.form['password'],
-                              request.form['status'], request.form['email'], request.form['personal_info'],
-                              request.form['phone'], request.form['address'])
+        # Проверяем, что длина пароля не меньше 5 символов:
+        if len(request.form['password']) < 5:
+            info_list.append(current_dt() + " - ошибка создания пользователя. Пароль слишком короткий (< 5 символов).")
+            return render_template('register.html', info_list = info_list)
+        else:
+            librarian = Librarian(request.form['user_name'], request.form['real_name'], request.form['password'],
+                                  request.form['status'], request.form['email'], request.form['personal_info'],
+                                  request.form['phone'], request.form['address'])
     else:
         # Составляем список не заполненных обязательных полей в форме:
         tmp_str = ("; ").join(filter(None, ["Логин"*(bool(request.form['user_name'])^1),
@@ -259,8 +261,27 @@ def register():
     return render_template('register.html', info_list = info_list)
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    user_name = request.form['user_name']
+    password = request.form['password']
+    registered_librarian = library.session.query(Librarian).filter_by(user_name=user_name, password=password).first()
+    if registered_librarian is None:
+        flash(current_dt() + " - Логин или пароль не верны")
+        return render_template('login.html')
+    login_user(registered_librarian)
+    flash(current_dt() + ' - Вход успешно выполнен.')
+    return redirect(url_for('show_users'))
+
+
+
+
 if __name__ == '__main__':
     library = Library('Детскя библиотека №28')
+    app.secret_key = 'strong SecReT Key 123123123!'
+    app.config['SESSION_TYPE'] = 'filesystem'  # http://stackoverflow.com/a/26080974
     login_manager = LoginManager()
     login_manager.init_app(app)
     app.debug = True

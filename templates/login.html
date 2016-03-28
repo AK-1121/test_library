@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<center>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for message in messages %}
+                    <i>{{ message }}</i>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form action="" method="post" class="form-horizontal">
+        <h3>Вход</h3>
+        <div>
+            <input type="text" id="user_name" name="user_name" placeholder="Введите логин" size="35%" required>
+        </div>
+        <br>
+        <div>
+            <input type="password" id="password" name="password" placeholder="Введите пароль" size="35%" required>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Войти</button>
+        </div>
+        <br>
+    </form>
+</center>
+
+{% endblock %}
