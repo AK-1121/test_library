@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 import time
 
-from flask import Flask, flash, render_template, request, redirect, url_for
-from flask.ext.login import LoginManager, login_user
+from flask import Flask, flash, render_template, request, redirect, url_for, g
+from flask.ext.login import LoginManager, login_user, logout_user, login_required, current_user
 from library_lib import Library, Book, User, Librarian, current_date, current_dt
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
@@ -112,7 +114,8 @@ def show_book(book_id):
 
 # <---- Start of user methods: ---->
 @app.route('/')
-def list_menu():
+#def list_menu():
+def index():
     return redirect("/show_users")
 
 
@@ -133,6 +136,7 @@ def show_users():
 @app.route('/show_all_users')
 def show_all_users():
     all_users = library.list_all_users()
+    #flash("User status type: " + str(type(g.user.status)))
     return render_template("show_users.html", suitable_users=all_users, search_params=("Все пользователи", '-'))
 
 
@@ -276,6 +280,17 @@ def login():
     return redirect(url_for('show_users'))
 
 
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for("index"))
+
+
+#  Any functions decorated with before_request will run before the view function each time a request is received:
+@app.before_request
+def before_request():
+    g.user = current_user
+
 
 
 if __name__ == '__main__':
@@ -284,6 +299,13 @@ if __name__ == '__main__':
     app.config['SESSION_TYPE'] = 'filesystem'  # http://stackoverflow.com/a/26080974
     login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = 'login'
+
+    @login_manager.user_loader
+    def load_user(id):
+        #return library.session.query(Librarian).get(int(id)) - в примере было так
+        return library.session.query(Librarian).get(id)
+
     app.debug = True
     app.run()
 

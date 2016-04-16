@@ -2,15 +2,6 @@
 
 {% block content %}
 <center>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flashes">
-                {% for message in messages %}
-                    <i>{{ message }}</i>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
     <form action="" method="post" class="form-horizontal">
         <h3>Вход</h3>
         <div>

@@ -9,9 +9,31 @@
         <tr align="center">
             <td><a href="/show_books">Список книг</a>&nbsp;&nbsp;
                 <a href="/show_users">Пользователи</a>&nbsp;&nbsp;
-                <a href="/login">Вход</a>
+                {% if g.user.is_authenticated %}
+                    {% if g.user.status == 2 %}
+                        <a href="/register">Добавить сотрудника</a>
+                    {% endif %}
+                    <a href="/logout">Выход (<i>{{ g.user.user_name }}</i>)</a>
+                {% else %}
+                     <a href="/login">Вход</a>
+                {% endif %}
             </td>
         </tr>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <tr bgcolor="#FFFFFF">
+                    <td>
+                        <ul class="flashes">
+                            {% for message in messages %}
+                                <i>{{ message }}</i>
+                            {% endfor %}
+                        </ul>
+                   </td>
+                </tr>
+            {% endif %}
+        {% endwith %}
+
         <tr bgcolor="#FFFFFF">
             <td>
                 {% block content %}
