@@ -4,7 +4,7 @@ import datetime
 import time
 
 from flask import Flask, flash, render_template, request, redirect, url_for, g
-from flask.ext.login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from library_lib import Library, Book, User, Librarian, current_date, current_dt
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
@@ -21,6 +21,7 @@ def hello_world():
 
 
 @app.route('/show_all_books')
+@login_required
 def show_all_books():
     books_list = library.list_all_books()
     for book in books_list:
@@ -48,6 +49,7 @@ def show_all_books():
 
 
 @app.route('/add_book', methods=['GET', 'POST'])
+@login_required
 def add_book():
     info_list = []
     if request.form:
@@ -69,6 +71,7 @@ def add_book():
 
 
 @app.route('/show_books', methods=['GET', 'POST'])
+@login_required
 def show_books():
     if request.form:
         # Process searching of book request:
@@ -105,6 +108,7 @@ def show_books():
 
 
 @app.route('/book/<int:book_id>')
+@login_required
 def show_book(book_id):
     book = library.find_books("book_id", book_id)[0]
     book.date_of_return_str = book.date_of_return_str()
@@ -120,6 +124,7 @@ def index():
 
 
 @app.route('/show_users', methods=['GET', 'POST'])
+@login_required
 def show_users():
     if request.form:
         # Process search users request:
@@ -134,6 +139,7 @@ def show_users():
 
 
 @app.route('/show_all_users')
+@login_required
 def show_all_users():
     all_users = library.list_all_users()
     #flash("User status type: " + str(type(g.user.status)))
@@ -142,6 +148,7 @@ def show_all_users():
 
 # Add new user:
 @app.route('/add_user', methods=['GET', 'POST'])
+@login_required
 def add_user():
     info_list = []
     if request.form:
@@ -163,6 +170,7 @@ def add_user():
 
 
 @app.route('/user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
 def show_user(user_id):
 
     user = library.session.query(User).filter(User.user_id == user_id).first()
@@ -223,18 +231,18 @@ def show_user(user_id):
 
 
 # < ---- Start of authorization session ---- >
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/admin/register', methods=['GET', 'POST'])
+@login_required
 def register():
     if request.method == 'GET':
         return render_template('register.html')
-    info_list = []
     # Проверям заполненность обязательных полей в форме:
     if (request.form['user_name'] and request.form['real_name'] and
             request.form['password'] and request.form['status']):
         # Проверяем, что длина пароля не меньше 5 символов:
         if len(request.form['password']) < 5:
-            info_list.append(current_dt() + " - ошибка создания пользователя. Пароль слишком короткий (< 5 символов).")
-            return render_template('register.html', info_list = info_list)
+            flash(current_dt() + " - ошибка создания пользователя. Пароль слишком короткий (< 5 символов).")
+            return render_template('register.html')
         else:
             librarian = Librarian(request.form['user_name'], request.form['real_name'], request.form['password'],
                                   request.form['status'], request.form['email'], request.form['personal_info'],
@@ -246,23 +254,14 @@ def register():
                                             "ФИО"*(bool(request.form['real_name'])^1),
                                             "Статус"*(bool(request.form['status'])^1)]))
 
-        info_list.append(current_dt() + (" - нельзя зарегистрировать пользователя. Необходимые обязательные поля "
+        flash(current_dt() + (" - нельзя зарегистрировать пользователя. Необходимые обязательные поля "
                                         "не указаны: " + tmp_str + "."))
-        return render_template('register.html', info_list = info_list)
-    #print('RRR: ' + str(request.form))
-    #print("1: %s, 2: %s, 3: %s, 4: %s, 5: %s, 6: %s, 7: %s, 8: %s" %(
-    #      request.form['user_name'], request.form['real_name'], request.form['password'], request.form['status'],
-    #      request.form['email'], request.form['personal_info'], request.form['phone'], request.form['address']))
-    #librarian = Librarian('testtest', 'Алексей К.', '12341234', '1', "test@tester.ru")
+        return render_template('register.html')
     library.session.add(librarian)
     library.session.commit()
-    info_list.append(current_dt() + " - пользователь {0} ({1}) успешно зарегистрирован".format(librarian.user_name,
-                                                                                                   librarian.real_name))
-    #except Exception as e:
-    #    info_list.append(current_dt() + " - пользователя {0} ({1}) зарегистрировать не удалось".format(
-    #            librarian.user_name, librarian.real_name) + ' Ошибка: %s (%s)' % (e.__class__, e.__context__))
-
-    return render_template('register.html', info_list = info_list)
+    flash(current_dt() + " - пользователь {0} ({1}) успешно зарегистрирован".format(librarian.user_name,
+                                                                                    librarian.real_name))
+    return render_template('register.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -290,6 +289,10 @@ def logout():
 @app.before_request
 def before_request():
     g.user = current_user
+    if request.path.startswith('/admin/'):
+        if not g.user.status == 2:
+            flash("У вас нет прав администратора!")
+            return redirect(url_for('login'))
 
 
 

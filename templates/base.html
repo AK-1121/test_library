@@ -11,7 +11,7 @@
                 <a href="/show_users">Пользователи</a>&nbsp;&nbsp;
                 {% if g.user.is_authenticated %}
                     {% if g.user.status == 2 %}
-                        <a href="/register">Добавить сотрудника</a>
+                        <a href="/admin/register">Добавить сотрудника</a>
                     {% endif %}
                     <a href="/logout">Выход (<i>{{ g.user.user_name }}</i>)</a>
                 {% else %}
