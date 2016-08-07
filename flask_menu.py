@@ -6,6 +6,7 @@ import time
 from flask import Flask, flash, render_template, request, redirect, url_for, g
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from library_lib import Library, Book, User, Librarian, current_date, current_dt
+from logging import FileHandler, WARNING
 
 user_search_params = {"name": "ФИО", "passport_id": "номер паспорта", "user_id": "внутренний идентификатор",
                       "address": "адрес", "phone": "телефон"}
@@ -13,6 +14,10 @@ book_search_params = {"title": "название книги", "author": "авт�
                       "book_code": "код книги", "group_code": "код раздела"}
 
 app = Flask(__name__)
+
+file_handler = FileHandler('errorlog.txt')
+file_handler.setLevel(WARNING)
+app.logger.addHandler(file_handler)
 
 
 @app.route('/hello')
@@ -290,7 +295,7 @@ def logout():
 def before_request():
     g.user = current_user
     if request.path.startswith('/admin/'):
-        if not g.user.status == 2:
+        if  current_user.is_anonymous or not g.user.status == 2:
             flash("У вас нет прав администратора!")
             return redirect(url_for('login'))
 

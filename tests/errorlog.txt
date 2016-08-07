@@ -1,0 +1,19 @@
+Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\flask\app.py", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\flask\app.py", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\flask\app.py", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\flask\_compat.py", line 33, in reraise
+    raise value
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\flask\app.py", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\flask\app.py", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "C:\python3_dir\d_phillips_book\my_library\flask_menu.py", line 278, in login
+    registered_librarian = g.library.session.query(Librarian).filter_by(user_name=user_name, password=password).first()
+  File "C:\python3_dir\d_phillips_book\my_library_venv\d_phillips_book\lib\site-packages\werkzeug\local.py", line 343, in __getattr__
+    return getattr(self._get_current_object(), name)
+AttributeError: '_AppCtxGlobals' object has no attribute 'library'
